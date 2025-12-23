@@ -1,4 +1,4 @@
-# Task Management System
+r z# Task Management System
 
 RESTful API for managing tasks and comments built with Django and Django REST Framework.
 
@@ -20,7 +20,15 @@ RESTful API for managing tasks and comments built with Django and Django REST Fr
 - **PostgreSQL 16**
 - **Poetry** for dependency management
 
+## Requirements
+
+- Python 3.12+
+- Poetry
+- Docker & Docker Compose (for PostgreSQL)
+
 ## Installation
+
+### 1. Clone the repository
 
 ### 1. Install dependencies with Poetry
 

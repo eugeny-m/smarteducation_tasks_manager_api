@@ -1,51 +1,83 @@
+"""
+Service layer for business logic related to tasks and comments.
+"""
 from django.utils import timezone
 from .models import Task, Comment
 
+
 class TaskService:
+    """
+    Service for Task-related operations.
+    """
+    
     @staticmethod
     def create_task(validated_data, creator):
         """
-        Business logic for creating a task.
-        """
-        # Resolve assignee from assignee_uuid if provided
-        assignee = validated_data.pop('assignee_uuid', None)
-        if assignee:
-            validated_data['assignee'] = assignee
-            
-        return Task.objects.create(creator=creator, **validated_data)
+        Create a new task.
 
+        Args:
+            validated_data: Validated data from serializer
+            creator: User instance who creates the task
+
+        Returns:
+            Task instance
+        """
+        validated_data['creator'] = creator
+        task = Task.objects.create(**validated_data)
+        return task
+    
     @staticmethod
     def update_task(task, validated_data):
         """
-        Business logic for updating a task.
+        Update an existing task.
+        Automatically sets completed_at when is_completed changes to True.
+
+        Args:
+            task: Task instance to update
+            validated_data: Validated data from serializer
+
+        Returns:
+            Updated Task instance
         """
-        # Handle is_completed timestamp
+        # Check if is_completed is changing from False to True
         if 'is_completed' in validated_data:
-            if validated_data['is_completed'] and not task.is_completed:
-                task.completed_at = timezone.now()
-            elif not validated_data['is_completed']:
-                task.completed_at = None
-
-        # Resolve assignee from assignee_uuid if provided
-        assignee = validated_data.pop('assignee_uuid', None)
-        if assignee:
-            task.assignee = assignee
-
-        for attr, value in validated_data.items():
-            setattr(task, attr, value)
+            new_is_completed = validated_data['is_completed']
+            old_is_completed = task.is_completed
+            
+            # Set completed_at only when transitioning to completed
+            if new_is_completed and not old_is_completed:
+                validated_data['completed_at'] = timezone.now()
+            # Clear completed_at if unmarking as completed
+            elif not new_is_completed and old_is_completed:
+                validated_data['completed_at'] = None
+        
+        # Update task fields
+        for field, value in validated_data.items():
+            setattr(task, field, value)
         
         task.save()
         return task
 
 
 class CommentService:
+    """
+    Service for Comment-related operations.
+    """
+    
     @staticmethod
     def create_comment(validated_data, author, task):
         """
-        Business logic for creating a comment.
+        Create a new comment.
+
+        Args:
+            validated_data: Validated data from serializer
+            author: User instance who creates the comment
+            task: Task instance the comment belongs to
+
+        Returns:
+            Comment instance
         """
-        return Comment.objects.create(
-            author=author,
-            task=task,
-            **validated_data
-        )
+        validated_data['author'] = author
+        validated_data['task'] = task
+        comment = Comment.objects.create(**validated_data)
+        return comment
