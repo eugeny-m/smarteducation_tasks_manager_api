@@ -49,6 +49,7 @@ logs/
 .pytest_cache/
 .coverage
 htmlcov/
+.cache/
 
 # Poetry
 poetry.lock

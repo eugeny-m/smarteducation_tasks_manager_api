@@ -16,11 +16,13 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     ViewSet for listing and retrieving users.
     Supports filtering by username or email via 'search' query parameter.
+    Uses UUID for lookup instead of primary key.
     """
     queryset = User.objects.all().order_by('username')
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     filterset_class = UserFilter
+    lookup_field = 'uuid'
 
     @extend_schema(
         responses={200: UserSerializer},
