@@ -21,8 +21,7 @@ services:
   web:
     build: .
     container_name: smarteducation_web
-    command: python manage.py runserver 0.0.0.0:8000
-#    command: python dev_loop.py
+    command: gunicorn --bind 0.0.0.0:8000 --workers 1 --reload --log-level debug config.wsgi:application
     volumes:
       - .:/app
     ports:
