@@ -41,6 +41,9 @@ class TaskService:
         Returns:
             Updated Task instance
         """
+        # Remove assignee_uuid from validated_data
+        validated_data.pop('assignee_uuid', None)
+
         # Check if is_completed is changing from False to True
         if 'is_completed' in validated_data:
             new_is_completed = validated_data['is_completed']
