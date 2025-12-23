@@ -1,8 +1,11 @@
 """
 Service layer for business logic related to tasks and comments.
 """
+import logging
 from django.utils import timezone
 from .models import Task, Comment
+
+logger = logging.getLogger(__name__)
 
 
 class TaskService:
@@ -26,6 +29,7 @@ class TaskService:
         validated_data.pop('assignee_uuid', None)
         validated_data['creator'] = creator
         task = Task.objects.create(**validated_data)
+        logger.info(f"User uuid {creator.uuid} created task uuid {task.uuid}")
         return task
     
     @staticmethod
@@ -61,6 +65,7 @@ class TaskService:
             setattr(task, field, value)
 
         task.save()
+        logger.info(f"Task uuid {task.uuid} updated")
         return task
 
 
@@ -85,4 +90,5 @@ class CommentService:
         validated_data['author'] = author
         validated_data['task'] = task
         comment = Comment.objects.create(**validated_data)
+        logger.info(f"User uuid {author.uuid} created comment uuid {comment.uuid} on task uuid {task.uuid}")
         return comment

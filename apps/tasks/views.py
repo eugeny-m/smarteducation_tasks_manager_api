@@ -1,6 +1,7 @@
 """
 ViewSets for Task and Comment APIs.
 """
+import logging
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -13,6 +14,8 @@ from .serializers import TaskSerializer, CommentSerializer
 from .services import TaskService, CommentService
 from .permissions import IsTaskOwnerOrAssignee
 from .filters import TaskFilter
+
+logger = logging.getLogger(__name__)
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -61,8 +64,17 @@ class TaskViewSet(viewsets.ModelViewSet):
         Update a task using TaskService.
         """
         validated_data = serializer.validated_data
-        task = TaskService.update_task(self.get_object(), validated_data)
+        task = self.get_object()
+        logger.info(f"User uuid {self.request.user.uuid} updating task uuid {task.uuid}")
+        task = TaskService.update_task(task, validated_data)
         serializer.instance = task
+
+    def perform_destroy(self, instance):
+        """
+        Delete a task.
+        """
+        logger.info(f"User uuid {self.request.user.uuid} deleted task uuid {instance.uuid}")
+        super().perform_destroy(instance)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
