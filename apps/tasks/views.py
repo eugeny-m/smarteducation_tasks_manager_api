@@ -50,8 +50,10 @@ class TaskViewSet(viewsets.ModelViewSet):
         Create a new task using TaskService.
         """
         validated_data = serializer.validated_data
-        task = TaskService.create_task(validated_data,
-                                       creator=self.request.user)
+        task = TaskService.create_task(
+            validated_data,
+            creator=self.request.user,
+        )
         serializer.instance = task
     
     def perform_update(self, serializer):
