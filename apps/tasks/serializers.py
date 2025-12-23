@@ -15,8 +15,11 @@ class TaskSerializer(serializers.ModelSerializer):
     """
     creator = UserSerializer(read_only=True)
     assignee = UserSerializer(read_only=True)
-    assignee_uuid = serializers.UUIDField(write_only=True, required=False,
-                                          allow_null=True)
+    assignee_uuid = serializers.UUIDField(
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
     
     class Meta:
         model = Task
@@ -32,50 +35,27 @@ class TaskSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['uuid', 'creator', 'assignee', 'completed_at',
-                            'created_at', 'updated_at']
-    
-    def validate_assignee_uuid(self, value):
+        read_only_fields = [
+            'uuid',
+            'creator',
+            'assignee',
+            'completed_at',
+            'created_at',
+            'updated_at',
+        ]
+
+    def validate(self, attrs):
         """
-        Validate that the assignee UUID corresponds to an existing user.
+        Object-level validation to set assignee from assignee_uuid.
         """
-        if value is None:
-            return None
-        
+        assignee_uuid = attrs.get('assignee_uuid', None)
+        if assignee_uuid is None:
+            return attrs
         try:
-            user = User.objects.get(uuid=value)
-            return user
+            attrs['assignee'] = User.objects.get(uuid=assignee_uuid)
         except User.DoesNotExist:
-            raise serializers.ValidationError(
-                "User with this UUID does not exist.")
-    
-    def create(self, validated_data):
-        """
-        Create a new task.
-        Assignee object is already validated and converted from UUID.
-        """
-        # Extract assignee object from validated data
-        assignee = validated_data.pop('assignee_uuid', None)
-        
-        # Set assignee if provided
-        if assignee:
-            validated_data['assignee'] = assignee
-        
-        return super().create(validated_data)
-    
-    def update(self, instance, validated_data):
-        """
-        Update a task.
-        Assignee object is already validated and converted from UUID.
-        """
-        # Extract assignee object from validated data
-        assignee = validated_data.pop('assignee_uuid', None)
-        
-        # Update assignee if provided
-        if 'assignee_uuid' in self.initial_data:
-            validated_data['assignee'] = assignee
-        
-        return super().update(instance, validated_data)
+            raise serializers.ValidationError( "User with this UUID does not exist.")
+        return attrs
 
 
 class CommentSerializer(serializers.ModelSerializer):

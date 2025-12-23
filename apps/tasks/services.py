@@ -22,6 +22,8 @@ class TaskService:
         Returns:
             Task instance
         """
+        # Remove assignee_uuid from validated_data
+        validated_data.pop('assignee_uuid', None)
         validated_data['creator'] = creator
         task = Task.objects.create(**validated_data)
         return task
@@ -43,18 +45,18 @@ class TaskService:
         if 'is_completed' in validated_data:
             new_is_completed = validated_data['is_completed']
             old_is_completed = task.is_completed
-            
+
             # Set completed_at only when transitioning to completed
             if new_is_completed and not old_is_completed:
                 validated_data['completed_at'] = timezone.now()
             # Clear completed_at if unmarking as completed
             elif not new_is_completed and old_is_completed:
                 validated_data['completed_at'] = None
-        
+
         # Update task fields
         for field, value in validated_data.items():
             setattr(task, field, value)
-        
+
         task.save()
         return task
 
