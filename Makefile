@@ -19,6 +19,7 @@ up:
 	@echo "✅ Containers started"
 	@echo "API: http://localhost:8000"
 	@echo "Docs: http://localhost:8000/api/docs/"
+	@echo "Docs: http://localhost:8000/api/redoc/"
 
 # 2. Setup project
 setup:
