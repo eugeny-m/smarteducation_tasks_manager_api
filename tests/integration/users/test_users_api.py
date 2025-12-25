@@ -43,15 +43,20 @@ class TestUserAPI:
         response = authenticated_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data['count'] >= 1
+        assert response.data['count'] == 1
+        assert response.data['results'][0]['uuid'] == str(user.uuid)
+        assert response.data['results'][0]['username'] == user.username
+        assert response.data['results'][0]['email'] == user.email
 
     def test_search_users_by_email(self, authenticated_client, user):
         """Test searching users by email."""
-        url = reverse('user-list') + f'?search={user.email.split("@")[0]}'
+        url = reverse('user-list') + f'?search={user.email}'
         response = authenticated_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data['count'] >= 1
+        assert response.data['count'] == 1
+        assert response.data['results'][0]['uuid'] == str(user.uuid)
+        assert response.data['results'][0]['email'] == user.email
 
     def test_retrieve_user(self, authenticated_client, user, another_user):
         """Test retrieving a specific user."""

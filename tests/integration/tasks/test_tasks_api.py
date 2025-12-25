@@ -146,15 +146,15 @@ class TestTaskAPI:
 
     def test_filter_tasks_by_completion(self, authenticated_client, user):
         """Test filtering tasks by completion status."""
-        Task.objects.create(
+        completed_task = Task.objects.create(
             title='Completed Task',
-            description='Description',
+            description='Completed Description',
             creator=user,
             is_completed=True
         )
         Task.objects.create(
             title='Pending Task',
-            description='Description',
+            description='Pending Description',
             creator=user,
             is_completed=False
         )
@@ -164,4 +164,52 @@ class TestTaskAPI:
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data['count'] == 1
+        assert response.data['results'][0]['uuid'] == str(completed_task.uuid)
         assert response.data['results'][0]['title'] == 'Completed Task'
+        assert response.data['results'][0]['description'] == 'Completed Description'
+        assert response.data['results'][0]['is_completed'] is True
+
+    def test_filter_tasks_by_creator(self, authenticated_client, user, another_user):
+        """Test filtering tasks by creator UUID."""
+        user_task = Task.objects.create(
+            title='User Task',
+            description='Created by user',
+            creator=user
+        )
+        Task.objects.create(
+            title='Another User Task',
+            description='Created by another user',
+            creator=another_user
+        )
+
+        url = reverse('task-list') + f'?creator={user.uuid}'
+        response = authenticated_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['count'] == 1
+        assert response.data['results'][0]['uuid'] == str(user_task.uuid)
+        assert response.data['results'][0]['creator']['uuid'] == str(user.uuid)
+        assert response.data['results'][0]['creator']['email'] == user.email
+
+    def test_filter_tasks_by_assignee(self, authenticated_client, user, another_user):
+        """Test filtering tasks by assignee UUID."""
+        assigned_task = Task.objects.create(
+            title='Assigned Task',
+            description='Assigned to another user',
+            creator=user,
+            assignee=another_user
+        )
+        Task.objects.create(
+            title='Unassigned Task',
+            description='No assignee',
+            creator=user
+        )
+
+        url = reverse('task-list') + f'?assignee={another_user.uuid}'
+        response = authenticated_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['count'] == 1
+        assert response.data['results'][0]['uuid'] == str(assigned_task.uuid)
+        assert response.data['results'][0]['assignee']['uuid'] == str(another_user.uuid)
+        assert response.data['results'][0]['assignee']['email'] == another_user.email
