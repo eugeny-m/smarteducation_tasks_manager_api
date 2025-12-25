@@ -1,4 +1,4 @@
-r z# Task Management System
+# Task Management System
 
 RESTful API for managing tasks and comments built with Django and Django REST Framework.
 
@@ -13,7 +13,7 @@ RESTful API for managing tasks and comments built with Django and Django REST Fr
 - 🐘 PostgreSQL database
 - 🐳 Docker support
 - 📝 Comprehensive logging
-- ✅ 91%+ test coverage
+- ✅ 78% test coverage
 
 ## Tech Stack
 
@@ -56,8 +56,8 @@ If you prefer not to use Make:
 ### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
-cd smarteducation
+git clone https://github.com/eugeny-m/smarteducation_tasks_manager_api.git
+cd smarteducation_tasks_manager_api
 ```
 
 ### 2. Create `.env` file
@@ -69,6 +69,12 @@ cp .env.example .env
 
 ### 3. Build and start containers
 
+View container logs:
+```bash
+docker-compose logs -f web
+```
+
+Access Django shell:
 ```bash
 docker-compose build
 docker-compose up -d
@@ -76,6 +82,12 @@ docker-compose up -d
 
 ### 4. Run migrations
 
+View container logs:
+```bash
+docker-compose logs -f web
+```
+
+Access Django shell:
 ```bash
 docker-compose exec web python manage.py makemigrations
 docker-compose exec web python manage.py migrate
@@ -83,6 +95,12 @@ docker-compose exec web python manage.py migrate
 
 ### 5. Create superuser
 
+View container logs:
+```bash
+docker-compose logs -f web
+```
+
+Access Django shell:
 ```bash
 docker-compose exec web python manage.py createsuperuser
 ```
@@ -91,7 +109,8 @@ docker-compose exec web python manage.py createsuperuser
 
 | Command | Description |
 |---------|-------------|
-| `make up` | Start Docker containers |
+| `make help` | Show available commands |
+| `make up` | Start Docker containers (auto-creates .env from .env.example if missing) |
 | `make setup` | Run migrations, collect static, create superuser |
 | `make test` | Run all tests with pytest |
 | `make down` | Stop Docker containers |
@@ -163,6 +182,12 @@ smarteducation/
 
 Key environment variables (see `.env.example` for full list):
 
+View container logs:
+```bash
+docker-compose logs -f web
+```
+
+Access Django shell:
 ```bash
 # Django
 SECRET_KEY=your-secret-key
@@ -189,19 +214,22 @@ DJANGO_LOG_LEVEL=INFO
 
 Run tests with pytest:
 
+View container logs:
 ```bash
-# All tests
-make test
-
-# With coverage
-make test-cov
-
-# Only integration tests
-make test-integration
-
-# Only unit tests
-make test-unit
+docker-compose logs -f web
 ```
+
+Access Django shell:
+```bash
+# Run all tests with coverage report
+make test
+```
+
+Current test coverage: **77.93%**
+
+Tests are organized in:
+- `tests/integration/` - Integration tests for API endpoints
+- `tests/unit/` - Unit tests (if needed)
 
 ## Logging
 
@@ -216,17 +244,21 @@ Logs include:
 
 ## Development
 
-The application uses Gunicorn with auto-reload in development mode:
+The application uses Gunicorn with auto-reload in development mode.
 
+View container logs:
 ```bash
-# View logs
-make logs
+docker-compose logs -f web
+```
 
-# Access Django shell
-make shell
+Access Django shell:
+```bash
+docker-compose exec web python manage.py shell
+```
 
-# Access container bash
-make bash
+Access container bash:
+```bash
+docker-compose exec web bash
 ```
 
 ## License
