@@ -50,6 +50,3 @@ logs/
 .coverage
 htmlcov/
 .cache/
-
-# Poetry
-poetry.lock
