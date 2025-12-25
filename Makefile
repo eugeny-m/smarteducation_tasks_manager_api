@@ -14,6 +14,11 @@ help:
 
 # 1. Start containers
 up:
+	@if [ ! -f .env ]; then \
+		echo "Creating .env from .env.example..."; \
+		cp .env.example .env; \
+		echo "⚠️  .env file created. Please review and update it if needed."; \
+	fi
 	@echo "Starting containers..."
 	docker-compose up -d
 	@echo "✅ Containers started"
