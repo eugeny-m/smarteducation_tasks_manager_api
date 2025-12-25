@@ -123,14 +123,14 @@ Username: bob_wilson     Password: bob123        Role: USER
 ### Authentication
 - `POST /api/auth/token/` - Obtain JWT token
 - `POST /api/auth/token/refresh/` - Refresh JWT token
-- `GET /api/auth/me/` - Get current user info
 
 ### Users
-- `GET /api/auth/` - List all users (with search)
-- `GET /api/auth/{uuid}/` - Get user details
+- `GET /api/users/` - List all users (with search: `?search=username`)
+- `GET /api/users/{uuid}/` - Get user details
+- `GET /api/users/me/` - Get current authenticated user info
 
 ### Tasks
-- `GET /api/tasks/` - List tasks (with filters)
+- `GET /api/tasks/` - List tasks (with filters: `?creator={uuid}`, `?assignee={uuid}`, `?is_completed=true`)
 - `POST /api/tasks/` - Create task
 - `GET /api/tasks/{uuid}/` - Get task details
 - `PATCH /api/tasks/{uuid}/` - Update task

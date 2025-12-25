@@ -16,7 +16,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # API
-    path('api/auth/', include('apps.users.urls')),
+    path('api/', include('apps.users.urls')),
     path('api/', include('apps.tasks.urls')),
 
     # API Documentation
