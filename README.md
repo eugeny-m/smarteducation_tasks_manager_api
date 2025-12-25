@@ -7,81 +7,228 @@ RESTful API for managing tasks and comments built with Django and Django REST Fr
 - 🔐 JWT Authentication
 - ✅ Task management (CRUD operations)
 - 💬 Comment system for tasks
+- 👥 User management with search
 - 🔍 Filtering and pagination
 - 📚 API documentation (Swagger & ReDoc)
 - 🐘 PostgreSQL database
 - 🐳 Docker support
+- 📝 Comprehensive logging
+- ✅ 91%+ test coverage
 
 ## Tech Stack
 
 - **Python 3.12**
-- **Django 5.1**
-- **Django REST Framework 3.15**
+- **Django 6.0**
+- **Django REST Framework 3.16**
 - **PostgreSQL 16**
-- **Poetry** for dependency management
+- **Gunicorn** for production
+- **Docker & Docker Compose**
 
 ## Requirements
 
-- Python 3.12+
-- Poetry
-- Docker & Docker Compose (for PostgreSQL)
+- Docker & Docker Compose
+- Make (optional, but recommended)
 
-## Installation
+## Quick Start
+
+The easiest way to get started is using the Makefile:
+
+```bash
+# 1. Start containers
+make up
+
+# 2. Setup project (migrate, collectstatic, create superuser)
+make setup
+
+# 3. (Optional) Fill database with test data
+make seed
+
+# View available commands
+make help
+```
+
+That's it! The API will be available at `http://localhost:8000`
+
+## Manual Installation
+
+If you prefer not to use Make:
 
 ### 1. Clone the repository
 
-### 1. Install dependencies with Poetry
-
 ```bash
-poetry install
+git clone <repository-url>
+cd smarteducation
 ```
 
-### 2. Activate virtual environment
-
-```bash
-poetry shell
-```
-
-### 3. Create `.env` file
+### 2. Create `.env` file
 
 ```bash
 cp .env.example .env
+# Edit .env with your settings
 ```
 
-### 4. Start services with Docker
+### 3. Build and start containers
 
 ```bash
+docker-compose build
 docker-compose up -d
 ```
 
-### 5. Run migrations
+### 4. Run migrations
 
 ```bash
-python manage.py migrate
+docker-compose exec web python manage.py makemigrations
+docker-compose exec web python manage.py migrate
 ```
 
-### 6. Create a superuser
+### 5. Create superuser
 
 ```bash
-python manage.py createsuperuser
+docker-compose exec web python manage.py createsuperuser
 ```
 
-### 7. Run development server
+## Makefile Commands
 
-```bash
-python manage.py runserver
+| Command | Description |
+|---------|-------------|
+| `make up` | Start Docker containers |
+| `make setup` | Run migrations, collect static, create superuser |
+| `make test` | Run all tests with pytest |
+| `make down` | Stop Docker containers |
+| `make seed` | Fill database with test data |
+
+### Test Data
+
+The `make seed` command creates:
+- **4 users** (1 admin, 3 regular users)
+- **6 tasks** (various statuses and assignees)
+- **8 comments** (distributed across tasks)
+
+Example users created:
 ```
-
-The API will be available at `http://localhost:8000`
+Username: admin          Password: admin123      Role: ADMIN
+Username: john_doe       Password: john123       Role: USER
+Username: jane_smith     Password: jane123       Role: USER
+Username: bob_wilson     Password: bob123        Role: USER
+```
 
 ## API Documentation
 
 - **Swagger UI**: http://localhost:8000/api/docs/
 - **ReDoc**: http://localhost:8000/api/redoc/
+- **OpenAPI Schema**: http://localhost:8000/api/schema/
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/token/` - Obtain JWT token
+- `POST /api/auth/token/refresh/` - Refresh JWT token
+- `GET /api/auth/me/` - Get current user info
+
+### Users
+- `GET /api/auth/` - List all users (with search)
+- `GET /api/auth/{uuid}/` - Get user details
+
+### Tasks
+- `GET /api/tasks/` - List tasks (with filters)
+- `POST /api/tasks/` - Create task
+- `GET /api/tasks/{uuid}/` - Get task details
+- `PATCH /api/tasks/{uuid}/` - Update task
+- `DELETE /api/tasks/{uuid}/` - Delete task
+
+### Comments
+- `GET /api/tasks/{uuid}/comments/` - List task comments
+- `POST /api/tasks/{uuid}/comments/` - Create comment
 
 ## Project Structure
 
-- `apps/core/`: Base models and shared logic.
-- `apps/users/`: Custom user model and authentication.
-- `apps/tasks/`: Tasks and comments logic, including services and filters.
-- `config/`: Django project configuration.
+```
+smarteducation/
+├── apps/
+│   ├── core/           # Base models and shared logic
+│   ├── users/          # User model, auth, and serializers
+│   └── tasks/          # Tasks, comments, services, filters
+├── config/             # Django settings and configuration
+├── tests/
+│   ├── integration/    # Integration tests
+│   └── unit/           # Unit tests
+├── logs/               # Application logs (auto-created)
+├── docker-compose.yml  # Docker services configuration
+├── Dockerfile          # Docker image definition
+├── Makefile            # Development commands
+└── pytest.ini          # Pytest configuration
+```
+
+## Environment Variables
+
+Key environment variables (see `.env.example` for full list):
+
+```bash
+# Django
+SECRET_KEY=your-secret-key
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database
+DB_NAME=smarteducation
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=db
+DB_PORT=5432
+
+# JWT
+JWT_ACCESS_TOKEN_LIFETIME_MINUTES=60
+JWT_REFRESH_TOKEN_LIFETIME_DAYS=7
+
+# Logging
+LOG_LEVEL=INFO
+DJANGO_LOG_LEVEL=INFO
+```
+
+## Testing
+
+Run tests with pytest:
+
+```bash
+# All tests
+make test
+
+# With coverage
+make test-cov
+
+# Only integration tests
+make test-integration
+
+# Only unit tests
+make test-unit
+```
+
+## Logging
+
+Logs are stored in the `logs/` directory:
+- `info.log` - All INFO+ level logs
+- `error.log` - ERROR level logs only
+
+Logs include:
+- Application startup
+- User actions (create, update, delete tasks/comments)
+- Request/response information
+
+## Development
+
+The application uses Gunicorn with auto-reload in development mode:
+
+```bash
+# View logs
+make logs
+
+# Access Django shell
+make shell
+
+# Access container bash
+make bash
+```
+
+## License
+
+[Your License Here]

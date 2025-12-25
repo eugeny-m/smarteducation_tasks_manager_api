@@ -24,7 +24,8 @@ services:
     command: gunicorn --bind 0.0.0.0:8000 --workers 1 --reload --log-level debug config.wsgi:application
     volumes:
       - .:/app
-      - logs:/app/logs
+      - ./logs:/app/logs
+      - ./staticfiles:/app/staticfiles
     ports:
       - "8000:8000"
     env_file:
