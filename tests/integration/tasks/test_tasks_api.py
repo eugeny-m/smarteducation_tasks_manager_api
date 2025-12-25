@@ -137,6 +137,96 @@ class TestTaskAPI:
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert not Task.objects.filter(uuid=task.uuid).exists()
 
+    def test_delete_task_by_creator(self, authenticated_client, user):
+        """Test that creator can delete their task."""
+        task = Task.objects.create(
+            title='Creator Task',
+            description='Test Description',
+            creator=user
+        )
+
+        url = reverse('task-detail', kwargs={'uuid': task.uuid})
+        response = authenticated_client.delete(url)
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        assert not Task.objects.filter(uuid=task.uuid).exists()
+
+    def test_delete_task_by_assignee(self, api_client, user, another_user):
+        """Test that assignee can delete assigned task."""
+        task = Task.objects.create(
+            title='Assigned Task',
+            description='Test Description',
+            creator=user,
+            assignee=another_user
+        )
+
+        # Authenticate as assignee
+        api_client.force_authenticate(user=another_user)
+
+        url = reverse('task-detail', kwargs={'uuid': task.uuid})
+        response = api_client.delete(url)
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        assert not Task.objects.filter(uuid=task.uuid).exists()
+
+    def test_delete_task_forbidden_for_other_users(self, api_client, user, another_user):
+        """Test that other users cannot delete task they don't own or aren't assigned to."""
+        task = Task.objects.create(
+            title='Someone Else Task',
+            description='Test Description',
+            creator=user
+        )
+
+        # Try to delete as another_user (not creator, not assignee)
+        api_client.force_authenticate(user=another_user)
+
+        url = reverse('task-detail', kwargs={'uuid': task.uuid})
+        response = api_client.delete(url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert Task.objects.filter(uuid=task.uuid).exists()
+
+    def test_any_authenticated_user_can_update_task(self, api_client, user, another_user):
+        """Test that any authenticated user can update tasks."""
+        task = Task.objects.create(
+            title='Original Title',
+            description='Original Description',
+            creator=user
+        )
+
+        # Update as another_user (not creator, not assignee)
+        api_client.force_authenticate(user=another_user)
+
+        url = reverse('task-detail', kwargs={'uuid': task.uuid})
+        data = {'title': 'Updated by Another User'}
+        response = api_client.patch(url, data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['title'] == 'Updated by Another User'
+
+        # Verify task was changed
+        task.refresh_from_db()
+        assert task.title == 'Updated by Another User'
+
+    def test_assignee_can_update_task(self, api_client, user, another_user):
+        """Test that assignee can update assigned task."""
+        task = Task.objects.create(
+            title='Original Title',
+            description='Original Description',
+            creator=user,
+            assignee=another_user
+        )
+
+        # Update as assignee
+        api_client.force_authenticate(user=another_user)
+
+        url = reverse('task-detail', kwargs={'uuid': task.uuid})
+        data = {'title': 'Updated by Assignee'}
+        response = api_client.patch(url, data, format='json')
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['title'] == 'Updated by Assignee'
+
     def test_unauthenticated_access(self, api_client):
         """Test that unauthenticated users cannot access tasks."""
         url = reverse('task-list')
